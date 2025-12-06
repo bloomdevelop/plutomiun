@@ -33,7 +33,7 @@ const useStyles = makeStyles({
     background: tokens.colorNeutralBackground3,
     padding: tokens.spacingVerticalS,
     borderRadius: tokens.borderRadiusMedium,
-    maxWidth: "100%",
+    maxWidth: "80%",
     width: "fit-content",
     wordBreak: "break-word",
   },
