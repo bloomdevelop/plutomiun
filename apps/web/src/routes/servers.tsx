@@ -51,6 +51,7 @@ const useStyles = makeStyles({
     boxShadow: tokens.shadow16,
     borderRadius: tokens.borderRadiusXLarge,
     background: tokens.colorNeutralBackground1,
+    zIndex: 1,
     margin: "0 8px 8px 0",
   },
   accordionPanel: {
@@ -98,7 +99,7 @@ const useStyles = makeStyles({
     ...shorthands.margin(tokens.spacingVerticalXXS, tokens.spacingHorizontalM),
     ...shorthands.border("1px", "solid", "transparent"),
     ":hover": {
-      background: tokens.colorNeutralBackground2Hover,
+      background: tokens.colorNeutralBackground3Hover,
     },
   },
   serverItemChannel: {
@@ -115,7 +116,7 @@ const useStyles = makeStyles({
     color: tokens.colorNeutralForeground1,
     ...shorthands.margin(tokens.spacingVerticalXXS, tokens.spacingHorizontalM),
     ":hover": {
-      background: tokens.colorNeutralBackground2Hover,
+      background: tokens.colorNeutralBackground3Hover,
     },
   },
   serverItemChannelSelected: {
