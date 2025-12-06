@@ -168,7 +168,7 @@ export default function Servers() {
     };
   }, [client]);
 
-  const [server, setServer] = useState<Server | undefined>(undefined);
+  const [_, setServer] = useState<Server | undefined>(undefined);
   const [selectedChannel, setSelectedChannel] = useState<Channel | undefined>(
     undefined
   );
