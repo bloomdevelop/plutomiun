@@ -1,11 +1,12 @@
 import {
   Button,
+  Divider,
   Input,
   makeStyles,
   tokens,
   Tooltip,
 } from "@fluentui/react-components";
-import { SendIcon } from "../utils/icons";
+import { AttachIcon, SendIcon } from "../utils/icons";
 import { Channel } from "stoat.js";
 import { useState } from "react";
 
@@ -15,12 +16,14 @@ const useStyles = makeStyles({
     flexDirection: "column",
     gap: tokens.spacingVerticalS,
     padding: tokens.spacingVerticalM,
+    marginInline: tokens.spacingHorizontalXXXL,
   },
   toolbar: {
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
-    gap: tokens.spacingHorizontalM,
+    gap: tokens.spacingHorizontalS,
+    alignItems: "center",
   },
   input: {
     flex: "1",
@@ -50,38 +53,38 @@ export default function ServerCompose({ channel }: { channel?: Channel }) {
   return (
     <div className={styles.root}>
       <Input
+        size="large"
         className={styles.input}
         placeholder={`Message ${channel?.name ? "#" + channel.name : ""}`}
         value={content}
         onChange={(_e, data) => setContent(data.value)}
         onKeyDown={handleKeyDown}
         disabled={!channel}
+        contentAfter={
+          <div className={styles.toolbar}>
+            <Tooltip
+              content="Attach Files"
+              positioning="above"
+              relationship="label"
+            >
+              <Button
+                icon={<AttachIcon />}
+                appearance="subtle"
+                disabled={!channel}
+              />
+            </Tooltip>
+            <Divider vertical />
+            <Tooltip content="Send" positioning="above" relationship="label">
+              <Button
+                icon={<SendIcon />}
+                appearance="subtle"
+                onClick={handleSend}
+                disabled={!channel || !content.trim()}
+              />
+            </Tooltip>
+          </div>
+        }
       />
-      <div className={styles.toolbar}>
-        <div>
-          <Tooltip
-            content="Attach Files"
-            positioning="above"
-            relationship="label"
-          >
-            <Button
-              icon={<SendIcon />}
-              appearance="subtle"
-              disabled={!channel}
-            />
-          </Tooltip>
-        </div>
-        <div>
-          <Tooltip content="Send" positioning="above" relationship="label">
-            <Button
-              icon={<SendIcon />}
-              appearance="subtle"
-              onClick={handleSend}
-              disabled={!channel || !content.trim()}
-            />
-          </Tooltip>
-        </div>
-      </div>
     </div>
   );
 }
