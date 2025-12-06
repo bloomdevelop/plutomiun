@@ -34,6 +34,7 @@ export default function AppHeader() {
         <PopoverTrigger disableButtonEnhancement>
           <Button
             appearance="subtle"
+            shape="circular"
             icon={
               <Avatar
                 size={28}
