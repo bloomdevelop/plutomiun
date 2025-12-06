@@ -1,0 +1,3 @@
+[submodule "packages/javascript-client-sdk"]
+	path = packages/javascript-client-sdk
+	url = https://github.com/bloomdevelop/javascript-client-sdk
