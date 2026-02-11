@@ -2,6 +2,10 @@
 
 Microsoft Teams, but on Stoat.chat.
 
+> Currently unfinished, so the progress is very slow.
+
+> Also, this is a monorepo along with a stoat.js fork
+
 ## Screenshots
 
 ![Screenshot](./assets/main.png)
