@@ -1,10 +1,15 @@
-import { HTMLAttributes, Suspense, useEffect, useState } from "react";
-import { Channel, Message } from "stoat.js";
+import { HTMLAttributes, Suspense, useEffect, useRef, useState } from "react";
+import { Channel, Message, User } from "stoat.js";
+import { useStoat } from "../contexts/stoat";
 import {
+  AvatarGroup,
+  AvatarGroupItem,
+  AvatarGroupPopover,
   Body1,
   Button,
   makeStyles,
   mergeClasses,
+  partitionAvatarGroupItems,
   Spinner,
   Title3,
   tokens,
@@ -51,7 +56,73 @@ const useStyles = makeStyles({
     flexDirection: "column",
     height: "100%",
   },
+  typingIndicator: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalS,
+    paddingInline: tokens.spacingHorizontalXXXL,
+    paddingBlock: tokens.spacingVerticalXS,
+    minHeight: "32px",
+  },
+  typingAvatars: {
+    display: "flex",
+    alignItems: "center",
+  },
+  typingText: {
+    fontSize: tokens.fontSizeBase200,
+    color: tokens.colorNeutralForeground2,
+    marginLeft: tokens.spacingHorizontalS,
+  },
 });
+
+function TypingIndicator({
+  users,
+  className,
+}: {
+  users: User[];
+  className?: string;
+}) {
+  const styles = useStyles();
+
+  if (users.length === 0) return null;
+
+  const getTypingText = () => {
+    if (users.length === 1) return `${users[0].username} is typing...`;
+    if (users.length === 2)
+      return `${users[0].username} and ${users[1].username} are typing...`;
+    return `${users[0].username} and ${users.length - 1} others are typing...`;
+  };
+
+  const partitionedItems = partitionAvatarGroupItems({ items: users });
+
+  return (
+    <div className={mergeClasses(styles.typingIndicator, className)}>
+      <div className={styles.typingAvatars}>
+        <AvatarGroup layout="stack" size={24}>
+          {partitionedItems.inlineItems.slice(0, 3).map((item) => (
+            <AvatarGroupItem
+              name={item.displayName || item.username}
+              image={{ src: item.avatarURL }}
+              key={item.id}
+            />
+          ))}
+          {partitionedItems.overflowItems && (
+            <AvatarGroupPopover>
+              {partitionedItems.overflowItems.slice(0, 3).map((item) => (
+                <AvatarGroupItem
+                  name={item.displayName || item.username}
+                  image={{ src: item.avatarURL }}
+                  key={item.id}
+                />
+              ))}
+            </AvatarGroupPopover>
+          )}
+        </AvatarGroup>
+      </div>
+      <span className={styles.typingText}>{getTypingText()}</span>
+    </div>
+  );
+}
 
 export default function ServerChannelView({
   className,
@@ -61,7 +132,29 @@ export default function ServerChannelView({
   channel?: Channel;
 }) {
   const styles = useStyles();
+  const { client } = useStoat();
   const [messages, setMessages] = useState<Message[]>([]);
+  const [typingUsers, setTypingUsers] = useState<User[]>([]);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const [isScrolledUp, setIsScrolledUp] = useState(false);
+  const scrollThreshold = 50;
+
+  const scrollToBottom = () => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop =
+        messagesContainerRef.current.scrollHeight;
+    }
+  };
+
+  const handleScroll = () => {
+    if (!messagesContainerRef.current) return;
+
+    const { scrollTop, scrollHeight, clientHeight } =
+      messagesContainerRef.current;
+    const isNearBottom =
+      scrollHeight - scrollTop - clientHeight < scrollThreshold;
+    setIsScrolledUp(!isNearBottom);
+  };
 
   useEffect(() => {
     if (!channel) return;
@@ -76,8 +169,73 @@ export default function ServerChannelView({
       }
     };
 
-    fetchMessages();
+    fetchMessages().then(() => {
+      scrollToBottom();
+    });
   }, [channel]);
+
+  useEffect(() => {
+    if (!channel) return;
+
+    const handleMessageCreate = (message: Message) => {
+      if (message.channelId !== channel.id) return;
+      if (channel.serverId && message.server?.id !== channel.serverId) return;
+
+      setMessages((prev) => [...prev, message]);
+    };
+
+    client.on("messageCreate", handleMessageCreate);
+
+    return () => {
+      client.off("messageCreate", handleMessageCreate);
+    };
+  }, [channel, client]);
+
+  useEffect(() => {
+    if (!isScrolledUp) {
+      scrollToBottom();
+    }
+  }, [messages, isScrolledUp]);
+
+  useEffect(() => {
+    if (!channel) return;
+
+    const updateTypingUsers = () => {
+      const users = channel.typing.filter((user): user is User => !!user);
+      setTypingUsers(users);
+    };
+
+    updateTypingUsers();
+
+    const handleStartTyping = (typingChannel: Channel, user?: User) => {
+      if (typingChannel.id !== channel.id) return;
+      if (channel.serverId && typingChannel.serverId !== channel.serverId)
+        return;
+      if (user) {
+        setTypingUsers((prev) => {
+          if (prev.some((u) => u.id === user.id)) return prev;
+          return [...prev, user];
+        });
+      }
+    };
+
+    const handleStopTyping = (typingChannel: Channel, user?: User) => {
+      if (typingChannel.id !== channel.id) return;
+      if (user) {
+        setTypingUsers((prev) => prev.filter((u) => u.id !== user.id));
+      } else {
+        setTypingUsers([]);
+      }
+    };
+
+    client.on("channelStartTyping", handleStartTyping);
+    client.on("channelStopTyping", handleStopTyping);
+
+    return () => {
+      client.off("channelStartTyping", handleStartTyping);
+      client.off("channelStopTyping", handleStopTyping);
+    };
+  }, [channel, client]);
 
   if (!channel) {
     return (
@@ -103,7 +261,11 @@ export default function ServerChannelView({
           ) : null}
         </div>
       </div>
-      <div className={styles.messagesView}>
+      <div
+        ref={messagesContainerRef}
+        onScroll={handleScroll}
+        className={styles.messagesView}
+      >
         <Suspense
           fallback={
             <div className={styles.loading}>
@@ -114,6 +276,7 @@ export default function ServerChannelView({
           <MessageList messages={messages} />
         </Suspense>
       </div>
+      <TypingIndicator users={typingUsers} />
       <ServerCompose channel={channel} />
     </div>
   );

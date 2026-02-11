@@ -22,28 +22,34 @@ import {
   OpenRegular,
   Attach24Filled,
   Attach24Regular,
+  EmojiRegular,
+  EmojiFilled,
+  GifFilled,
+  GifRegular,
 } from "@fluentui/react-icons";
 
 const HomeIcon = bundleIcon(Home32Filled, Home32Regular);
 const SendIcon = bundleIcon(Send24Filled, Send24Regular);
 const ChatMultipleIcon = bundleIcon(
   ChatMultiple24Filled,
-  ChatMultiple24Regular
+  ChatMultiple24Regular,
 );
 const AttachIcon = bundleIcon(Attach24Filled, Attach24Regular);
 const ChatIcon = bundleIcon(ChatFilled, ChatRegular);
 const CallIcon = bundleIcon(Call24Filled, Call24Regular);
 const ServerMultipleIcon = bundleIcon(
   ServerMultipleFilled,
-  ServerMultipleRegular
+  ServerMultipleRegular,
 );
 const ChevronRightIcon = bundleIcon(ChevronRightFilled, ChevronRightRegular);
 const CheckmarkCircleIcon = bundleIcon(
   CheckmarkCircle24Filled,
-  CheckmarkCircle24Regular
+  CheckmarkCircle24Regular,
 );
 const EditIcon = bundleIcon(EditFilled, EditRegular);
 const OpenIcon = bundleIcon(OpenFilled, OpenRegular);
+const EmojiIcon = bundleIcon(EmojiFilled, EmojiRegular);
+const GifIcon = bundleIcon(GifFilled, GifRegular);
 
 export {
   HomeIcon,
@@ -57,4 +63,6 @@ export {
   EditIcon,
   OpenIcon,
   AttachIcon,
+  EmojiIcon,
+  GifIcon,
 };

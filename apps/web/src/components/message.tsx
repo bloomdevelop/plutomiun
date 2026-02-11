@@ -13,6 +13,7 @@ import ErrorFallback from "./error-boundary";
 import { Fragment, useMemo } from "react";
 import convertPresence from "../utils/convert-presence";
 import { useStoat } from "../contexts/stoat";
+import { Clock12Filled } from "@fluentui/react-icons/svg/clock";
 
 const useStyles = makeStyles({
   root: {
@@ -20,6 +21,7 @@ const useStyles = makeStyles({
     flexDirection: "row",
     gap: tokens.spacingHorizontalM,
     paddingBottom: 0,
+    marginBlock: tokens.spacingVerticalMNudge,
     alignItems: "center",
     "&:hover .timestamp": {
       opacity: 1,
@@ -41,8 +43,6 @@ const useStyles = makeStyles({
     display: "flex",
     flexDirection: "row",
     gap: tokens.spacingHorizontalS,
-    paddingTop: tokens.spacingVerticalM,
-    marginLeft: "48px",
   },
   tailPlaceholder: {
     width: "36px",
@@ -85,18 +85,12 @@ export function MessageComponent({ message, tail }: MessageComponentProps) {
   return (
     <ErrorBoundary fallbackRender={ErrorFallback}>
       <div className={styles.messageCol}>
-        {!isSelf && !tail && (
-          <div className={styles.contentHeader}>
-            <Body1>{message.author?.displayName}</Body1>
-          </div>
-        )}
-
         <div
           className={mergeClasses(
             styles.root,
             tail && styles.rootTail,
             isSelf && styles.rootSelf,
-            isSelf && !tail && styles.rootSelfNoTail
+            isSelf && !tail && styles.rootSelfNoTail,
           )}
         >
           {!isSelf &&
@@ -122,9 +116,20 @@ export function MessageComponent({ message, tail }: MessageComponentProps) {
           <div
             className={mergeClasses(
               styles.content,
-              isSelf && styles.contentSelf
+              isSelf && styles.contentSelf,
             )}
           >
+            {!isSelf && !tail && (
+              <div className={styles.contentHeader}>
+                <Body1 style={{ fontWeight: 600 }}>
+                  {message.author?.displayName}
+                </Body1>
+                {message.member?.timeout && (
+                  <Clock12Filled color={tokens.colorPaletteRedForeground1} />
+                )}
+              </div>
+            )}
+
             {/* TODO: Implement Markdown */}
             <Body1>{message.content}</Body1>
           </div>
@@ -207,7 +212,7 @@ export function MessageList({ messages }: { messages: Message[] }) {
       }
 
       E.push(
-        <MessageComponent key={`${M.id}:${tail}`} message={M} tail={tail} />
+        <MessageComponent key={`${M.id}:${tail}`} message={M} tail={tail} />,
       );
 
       if (date) {
@@ -222,7 +227,7 @@ export function MessageList({ messages }: { messages: Message[] }) {
               day: "numeric",
               year: "numeric",
             })}
-          </Divider>
+          </Divider>,
         );
       }
     }
