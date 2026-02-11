@@ -8,7 +8,7 @@ Microsoft Teams, but on Stoat.chat.
 
 ## Screenshots
 
-![Screenshot](./assets/main.png)
+![Screenshot](.github/assets/main.png)
 
 ## File Structure (Apps and Packages)
 
